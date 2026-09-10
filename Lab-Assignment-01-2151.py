@@ -1,0 +1,46 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+df = pd.read_csv("earthquake_1995-2023.csv")
+print("First 5 records:")
+print(df.head())
+print("\nShape of dataset:")
+print(df.shape)
+print("\nDataset information:")
+df.info()
+print("\nColumn names:")
+print(df.columns.tolist())
+print("\nData types:")
+print(df.dtypes)
+full_duplicates = df.duplicated().sum()
+print("\nFully identical duplicate rows:", full_duplicates)
+key_duplicates = df.duplicated(subset=["title", "date_time"]).sum()
+print("Duplicate earthquakes based on title + date_time:", key_duplicates)
+print("\nRows before removing duplicates:", len(df))
+df = df.drop_duplicates()
+df = df.drop_duplicates(subset=["title", "date_time"])
+print("Rows after removing duplicates:", len(df))
+print("\nMissing values in each column:")
+print(df.isnull().sum())
+numeric_cols = ["cdi", "gap", "nst", "dmin"]
+for col in numeric_cols:
+    df[col] = df[col].replace(0, np.nan)
+print("\nMissing values after replacing 0 with NaN:")
+print(df[numeric_cols].isnull().sum())
+print("\nSkewness of numeric columns:")
+print(df[numeric_cols].skew())
+for col in numeric_cols:
+    df[col] = df[col].fillna(df[col].median())
+print("\nMissing values after median imputation:")
+print(df[numeric_cols].isnull().sum())
+categorical_cols = df.select_dtypes(include="object").columns
+for col in categorical_cols:
+    df[col] = df[col].fillna("Unknown")
+print("\nFinal missing values in dataset:")
+print(df.isnull().sum())
+plt.figure(figsize=(8, 5))
+df["gap"].hist()
+plt.title("Distribution of Gap")
+plt.xlabel("Gap")
+plt.ylabel("Frequency")
+plt.show()
